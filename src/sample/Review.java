@@ -1,19 +1,24 @@
 package sample;
 
 public class Review {
-    private int rating;
+    private String rating;
     private String comment;
 
     public Review() {
-        this.rating = 0;
+        this.rating = null;
         this.comment = null;
     }
 
-    public int getRating() {
+    public Review(String rating, String comment) {
+        this.rating = rating;
+        this.comment = comment;
+    }
+
+    public String getRating() {
         return rating;
     }
 
-    public void setRating(int rating) {
+    public void setRating(String rating) {
         this.rating = rating;
     }
 

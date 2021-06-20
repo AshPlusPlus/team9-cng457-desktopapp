@@ -1,15 +1,14 @@
 package sample;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.awt.event.ActionEvent;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -66,6 +65,8 @@ public class Controller {
     private CheckBox checkboxPhoneFinger;
     @FXML
     private Button btnGetPhones;
+    @FXML
+    private ListView lvProds;
 
     private ArrayList<Product> products;
 
@@ -90,7 +91,7 @@ public class Controller {
         this.products = new ArrayList<>();
 
         if (tfCompBrand.getText().length() > 0)
-            brand = "?brand=" + tfCompBrand.getText();
+            brand = "&brand=" + tfCompBrand.getText();
         if (tfCompSSize.getText().length() > 0) {
             feats = getranges(tfCompSSize,"screensize");
             minss = "&" + feats[0];
@@ -173,9 +174,9 @@ public class Controller {
         JSONArray array2 = (JSONArray) obj2;
 
         ArrayList<JSONObject> array = new ArrayList<>();
-        int arraysize;
-        if (array1.size()>array2.size()) arraysize = array2.size();
-        else arraysize = array1.size();
+        System.out.println(array1.size());
+        System.out.println(array2.size());
+
         for (int i = 0; i < array1.size(); i++){
             JSONObject temp1 = (JSONObject) array1.get(i);
             for (int j = 0; j<array2.size(); j++){
@@ -184,7 +185,7 @@ public class Controller {
                     array.add(temp1);
             }
         }
-
+        System.out.println(array.size());
         for (int i = 0; i < array.size(); i++){
             JSONObject temp = (JSONObject) array.get(i);
             JSONObject brandjson = (JSONObject) temp.get("brand");
@@ -220,12 +221,16 @@ public class Controller {
                 if (featurename.equals("touchscreen"))
                     product.setFace("Touchscreen");
             }
-            Review review = new Review();
             for (int j =0; j<reviews.size();j++){
-               // product.getReviews()
+                JSONObject temp3 = (JSONObject) reviews.get(j);
+                product.getReviews().add(new Review((String) temp3.get("rating"), (String) temp3.get("message")));
             }
+
+            System.out.println(product.getBrand() + product.getModel());
             this.products.add(product);
         }
+        //HBox hbox = new HBox(lvProds);
+
 
 
 

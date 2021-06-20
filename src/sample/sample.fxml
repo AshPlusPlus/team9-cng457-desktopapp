@@ -43,7 +43,7 @@
                         <CheckBox fx:id="checkboxCompTouch" layoutX="373.0" layoutY="95.0" mnemonicParsing="false" text="Touchscreen" />
                         <CheckBox fx:id="checkboxCompFace" layoutX="373.0" layoutY="123.0" mnemonicParsing="false" text="Face Recognition" />
                         <CheckBox fx:id="checkboxCompFinger" layoutX="373.0" layoutY="149.0" mnemonicParsing="false" text="Fingerprint Reader" />
-                        <Button fx:id="btnGetComps" layoutX="371.0" layoutY="182.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="97.0" text="Get Computers" />
+                        <Button fx:id="btnGetComps" layoutX="371.0" layoutY="182.0" mnemonicParsing="false" onAction="#compBtnPressed" prefHeight="50.0" prefWidth="97.0" text="Get Computers" />
                         <TextField fx:id="tfCompPrice" layoutX="151.0" layoutY="207.0" />
                      </children>
                   </AnchorPane>
@@ -87,7 +87,7 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <ListView prefHeight="200.0" prefWidth="200.0" />
+            <ListView fx:id="lvProds" prefHeight="200.0" prefWidth="200.0" />
          </children>
       </GridPane>
    </children>
