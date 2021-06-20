@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -69,6 +70,10 @@ public class Controller {
     private Button btnGetPhones;
     @FXML
     private ListView lvProds;
+    @FXML
+    private ListView lvComp1;
+    @FXML
+    private ListView lvComp2;
     @FXML
     private Button btnSort;
 
@@ -206,7 +211,7 @@ public class Controller {
             }
             product.setId(temp.get("prod_id").toString());
             product.setModel((String) temp.get("model"));
-            product.setPrice(temp.get("price").toString());
+            product.setPrice(Double.parseDouble(temp.get("price").toString()));
 
             for (int j = 0; j < productfeatures.size(); j++){
                 JSONObject temp2 = (JSONObject) productfeatures.get(j);
@@ -368,7 +373,7 @@ public class Controller {
             }
             product.setId(temp.get("prod_id").toString());
             product.setModel((String) temp.get("model"));
-            product.setPrice(temp.get("price").toString());
+            product.setPrice(Double.parseDouble(temp.get("price").toString()));
 
             for (int j = 0; j < productfeatures.size(); j++){
                 JSONObject temp2 = (JSONObject) productfeatures.get(j);
@@ -413,6 +418,45 @@ public class Controller {
         for(Product product:products){
             lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
         }
+    }
+
+    public void compareBtnPressed(ActionEvent e){
+        lvComp1.getItems().clear();
+        lvComp2.getItems().clear();
+        Product product = null;
+        for (int i = 0; i<lvProds.getSelectionModel().getSelectedIndices().size(); i++) {
+            product = products.get((int) lvProds.getSelectionModel().getSelectedIndices().get(i));
+            lvComp1.getItems().add("Product " + (i+1));
+            lvComp1.getItems().add("\tBrand: " + product.getBrand());
+            lvComp1.getItems().add("\tModel: " + product.getModel());
+            lvComp1.getItems().add("\tPrice: " + product.getPrice());
+            lvComp1.getItems().add("\tScreen Size: " + product.getScreensize());
+            lvComp1.getItems().add("\tMemory: " + product.getMemory());
+            lvComp1.getItems().add("\tBattery: " + product.getBattery());
+            if(product.getStorage()!=null) {
+                lvComp1.getItems().add("\tStorage: " + product.getStorage());
+                lvComp1.getItems().add("\tProcessor: " + product.getProcessor());
+                lvComp1.getItems().add("\tResolution: " + product.getResolution());
+            }
+            if (product.getFace()!=null)
+                lvComp1.getItems().add("\tFace Recognition: ");
+            if (product.getFinger()!=null)
+                lvComp1.getItems().add("\tFingerprint Reader: ");
+            if (product.getTouch()!=null)
+                lvComp1.getItems().add("\tTouchscreen: ");
+
+            lvComp2.getItems().add("Product " + (i+1));
+            int j = 0;
+            for (Review review: product.getReviews()){
+                lvComp2.getItems().add("Rating: " + review.getRating());
+                if (review.getComment()!=null)
+                    lvComp2.getItems().add("Comment: " + review.getRating());
+                j++;
+                if (j==3)
+                    break;
+            }
+        }
+
     }
 
 
@@ -466,6 +510,8 @@ public class Controller {
         inputRestrictions(tfPhoneSSize);
         inputRestrictions(tfPhoneMem);
         inputRestrictions(tfPhonePrice);
+        lvProds.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
 
     }
 

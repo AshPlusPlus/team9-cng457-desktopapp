@@ -11,7 +11,7 @@ public class Product {
     private String processor;
     private String memory;
     private String storage;
-    private String price;
+    private Double price;
     private String battery;
     private String touch;
     private String finger;
@@ -38,16 +38,7 @@ public class Product {
         this.label = null;
         this.reviews = new ArrayList<Review>();
     }
-    public Product(String id, String brand, String screensize, String resolution, String processor, String memory, String storage, String price) {
-        this.id = id;
-        this.brand = brand;
-        this.screensize = screensize;
-        this.resolution = resolution;
-        this.processor = processor;
-        this.memory = memory;
-        this.storage = storage;
-        this.price = price;
-    }
+
 
     public String getId() {
         return id;
@@ -105,11 +96,11 @@ public class Product {
         this.storage = storage;
     }
 
-    public String getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
     public ArrayList<Review> getReviews() {
