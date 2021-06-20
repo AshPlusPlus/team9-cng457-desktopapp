@@ -38,8 +38,6 @@ public class Controller {
     @FXML
     private RadioButton radiobtnCompExtralong;
     @FXML
-    private RadioButton radiobtnCompNormal;
-    @FXML
     private CheckBox checkboxCompTouch;
     @FXML
     private CheckBox checkboxCompFace;
@@ -60,8 +58,6 @@ public class Controller {
     private RadioButton radiobtnPhoneAllday;
     @FXML
     private RadioButton radiobtnPhoneExtralong;
-    @FXML
-    private RadioButton radiobtnPhoneNormal;
     @FXML
     private CheckBox checkboxPhoneTouch;
     @FXML
@@ -88,8 +84,10 @@ public class Controller {
         String maxstor = "";
         String minprice = "";
         String maxprice = "";
+        String battery = "";
+        String extras = "";
         String [] feats;
-        products = new ArrayList<Product>();
+        this.products = new ArrayList<>();
 
         if (tfCompBrand.getText().length() > 0)
             brand = "?brand=" + tfCompBrand.getText();
@@ -124,6 +122,21 @@ public class Controller {
             minprice = "&" + feats[0];
             maxprice = "&" + feats[1];
         }
+        if (radiobtnCompAllday.isSelected())
+            battery = "&batterylife=allday";
+        else
+            battery = "&batterylife=extra";
+        if (checkboxCompFace.isSelected() || checkboxCompFinger.isSelected() || checkboxCompTouch.isSelected()){
+            extras = "& extrafeatures=";
+            if (checkboxCompFace.isSelected())
+                extras += "facerecognition,";
+            if (checkboxCompTouch.isSelected())
+                extras += "touchscreen,";
+            if (checkboxCompFinger.isSelected())
+                extras += "fingerprint,";
+        }
+
+
 
         String response = "";
         HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/getcomputerswithranges?"
@@ -139,13 +152,44 @@ public class Controller {
             scanner.close();
         }
         JSONParser parser = new JSONParser();
-        Object obj = parser.parse(response);
-        JSONArray array = (JSONArray) obj;
+        Object obj1 = parser.parse(response);
+        JSONArray array1 = (JSONArray) obj1;
+
+        response = "";
+        connection = (HttpURLConnection) new URL("http://localhost:8080/getcomputers?"
+                + battery + extras).openConnection();
+        connection.setRequestMethod("GET");
+        responsecode = connection.getResponseCode();
+        if(responsecode == 200){
+            Scanner scanner = new Scanner(connection.getInputStream());
+            while(scanner.hasNextLine()){
+                response += scanner.nextLine();
+                response += "\n";
+            }
+            scanner.close();
+        }
+        parser = new JSONParser();
+        Object obj2 = parser.parse(response);
+        JSONArray array2 = (JSONArray) obj2;
+
+        ArrayList<JSONObject> array = new ArrayList<>();
+        int arraysize;
+        if (array1.size()>array2.size()) arraysize = array2.size();
+        else arraysize = array1.size();
+        for (int i = 0; i < array1.size(); i++){
+            JSONObject temp1 = (JSONObject) array1.get(i);
+            for (int j = 0; j<array2.size(); j++){
+                JSONObject temp2 = (JSONObject) array2.get(j);
+                if (temp1.equals(temp2))
+                    array.add(temp1);
+            }
+        }
 
         for (int i = 0; i < array.size(); i++){
             JSONObject temp = (JSONObject) array.get(i);
             JSONObject brandjson = (JSONObject) temp.get("brand");
             JSONArray productfeatures = (JSONArray) temp.get("prod_features");
+            JSONArray reviews = (JSONArray) temp.get("comments");
             Product product = new Product();
             product.setId(temp.get("prod_id").toString());
             product.setModel((String) temp.get("model"));
@@ -165,8 +209,22 @@ public class Controller {
                     product.setScreensize((String) temp2.get("value"));
                 if(featurename.equals("memory"))
                     product.setMemory((String) temp2.get("value"));
-
+                if(featurename.equals("battery_life_all_day"))
+                    product.setBattery("All Day Battery");
+                else if(featurename.equals("battery_life_extra_long"))
+                    product.setBattery("Extra Long Battery");
+                if (featurename.equals("face_recognition"))
+                    product.setFace("Face Recognition");
+                if (featurename.equals("fingerprint_reader"))
+                    product.setFinger("Fingerprint Reader");
+                if (featurename.equals("touchscreen"))
+                    product.setFace("Touchscreen");
             }
+            Review review = new Review();
+            for (int j =0; j<reviews.size();j++){
+               // product.getReviews()
+            }
+            this.products.add(product);
         }
 
 

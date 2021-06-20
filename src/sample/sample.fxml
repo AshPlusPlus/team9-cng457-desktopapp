@@ -33,18 +33,17 @@
                         <TextField fx:id="tfCompMem" layoutX="151.0" layoutY="142.0" />
                         <TextField fx:id="tfCompStor" layoutX="151.0" layoutY="173.0" />
                         <Label layoutX="318.0" layoutY="14.0" text="Battery:" />
-                        <RadioButton fx:id="radiobtnCompAllday" layoutX="373.0" layoutY="14.0" mnemonicParsing="false" text="All-day">
+                        <RadioButton fx:id="radiobtnCompAllday" layoutX="373.0" layoutY="14.0" mnemonicParsing="false" selected="true" text="All-day">
                            <toggleGroup>
                               <ToggleGroup fx:id="compbatterytype" />
                            </toggleGroup></RadioButton>
                         <RadioButton fx:id="radiobtnCompExtralong" layoutX="373.0" layoutY="38.0" mnemonicParsing="false" text="Extra-long" toggleGroup="$compbatterytype" />
-                        <RadioButton fx:id="radiobtnCompNormal" layoutX="373.0" layoutY="62.0" mnemonicParsing="false" text="Normal" toggleGroup="$compbatterytype" />
 
                          <Label layoutX="316.0" layoutY="95.0" text="Extras:" />
                         <CheckBox fx:id="checkboxCompTouch" layoutX="373.0" layoutY="95.0" mnemonicParsing="false" text="Touchscreen" />
                         <CheckBox fx:id="checkboxCompFace" layoutX="373.0" layoutY="123.0" mnemonicParsing="false" text="Face Recognition" />
                         <CheckBox fx:id="checkboxCompFinger" layoutX="373.0" layoutY="149.0" mnemonicParsing="false" text="Fingerprint Reader" />
-                        <Button fx:id="btngetComps" layoutX="371.0" layoutY="182.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="97.0" text="Get Computers" />
+                        <Button fx:id="btnGetComps" layoutX="371.0" layoutY="182.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="97.0" text="Get Computers" />
                         <TextField fx:id="tfCompPrice" layoutX="151.0" layoutY="207.0" />
                      </children>
                   </AnchorPane>
@@ -67,13 +66,12 @@
                               <ToggleGroup fx:id="phonebatterytype" />
                            </toggleGroup></RadioButton>
                   <RadioButton fx:id="radiobtnPhoneExtralong" layoutX="373.0" layoutY="38.0" mnemonicParsing="false" text="Extra-long" toggleGroup="$phonebatterytype" />
-                  <RadioButton fx:id="radiobtnPhoneNormal" layoutX="373.0" layoutY="62.0" mnemonicParsing="false" text="Normal" toggleGroup="$phonebatterytype" />
                   <Label layoutX="314.0" layoutY="91.0" text="Extras:" />
                   <CheckBox fx:id="checkboxPhoneTouch" layoutX="373.0" layoutY="95.0" mnemonicParsing="false" text="Touchscreen" />
                   <CheckBox fx:id="checkboxPhoneFace" layoutX="373.0" layoutY="123.0" mnemonicParsing="false" text="Face Recognition" />
                   <CheckBox fx:id="checkboxPhoneFinger" layoutX="373.0" layoutY="149.0" mnemonicParsing="false" text="Fingerprint Reader" />
                   <Button fx:id="btnGetPhones" layoutX="371.0" layoutY="182.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="97.0" text="Get Phones" />
-                        <TextField layoutX="151.0" layoutY="154.0" />
+                        <TextField fx:id="tfPhonePrice" layoutX="151.0" layoutY="154.0" />
                 </children>
               </AnchorPane>
             </content>
