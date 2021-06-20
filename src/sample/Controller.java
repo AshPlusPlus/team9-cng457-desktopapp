@@ -14,6 +14,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class Controller {
@@ -67,6 +69,8 @@ public class Controller {
     private Button btnGetPhones;
     @FXML
     private ListView lvProds;
+    @FXML
+    private Button btnSort;
 
     private ArrayList<Product> products;
 
@@ -89,7 +93,7 @@ public class Controller {
         String extras = "";
         String [] feats;
         this.products = new ArrayList<>();
-
+        lvProds.getItems().clear();
         if (tfCompBrand.getText().length() > 0)
             brand = "&brand=" + tfCompBrand.getText();
         if (tfCompSSize.getText().length() > 0) {
@@ -109,24 +113,25 @@ public class Controller {
             maxproc = "&" + feats[1];
         }
         if (tfCompMem.getText().length() > 0) {
-            feats = getranges(tfCompSRes,"memory");
+            feats = getranges(tfCompMem,"memory");
             minmem = "&" + feats[0];
             maxmem = "&" + feats[1];
         }
         if (tfCompStor.getText().length() > 0) {
-            feats = getranges(tfCompSRes,"storage");
+            feats = getranges(tfCompStor,"storage");
             minstor = "&" + feats[0];
             maxstor = "&" + feats[1];
         }
         if (tfCompPrice.getText().length() > 0) {
-            feats = getranges(tfCompSRes,"price");
+            feats = getranges(tfCompPrice,"price");
             minprice = "&" + feats[0];
             maxprice = "&" + feats[1];
         }
         if (radiobtnCompAllday.isSelected())
             battery = "&batterylife=allday";
-        else
+        else if (radiobtnCompExtralong.isSelected())
             battery = "&batterylife=extra";
+
         if (checkboxCompFace.isSelected() || checkboxCompFinger.isSelected() || checkboxCompTouch.isSelected()){
             extras = "&extrafeatures=";
             if (checkboxCompFace.isSelected())
@@ -217,6 +222,8 @@ public class Controller {
                     product.setScreensize((String) temp2.get("value"));
                 if(featurename.equals("memory"))
                     product.setMemory((String) temp2.get("value"));
+                if(featurename.equals("storage_capacity"))
+                    product.setStorage((String) temp2.get("value"));
                 if(featurename.equals("battery_life_all_day"))
                     product.setBattery("All Day Battery");
                 else if(featurename.equals("battery_life_extra_long"))
@@ -232,16 +239,181 @@ public class Controller {
                 JSONObject temp3 = (JSONObject) reviews.get(j);
                 product.getReviews().add(new Review((String) temp3.get("rating"), (String) temp3.get("message")));
             }
-
-            lvProds.getItems().add(product.getBrand() + product.getModel());
+            product.setLabel(" ");
+            if (Integer.parseInt(product.getMemory()) > 16)
+                product.setLabel(product.getLabel() + "Large Memory ");
+            if (Integer.parseInt(product.getStorage()) > 1000)
+                product.setLabel(product.getLabel() + "Large Storage");
+            lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
             this.products.add(product);
         }
 
     }
 
+    public void phoneBtnPressed(ActionEvent event) throws IOException, ParseException, org.json.simple.parser.ParseException {
+        String brand = "";
+        String minss = "";
+        String maxss = "";
+        String minsr = "";
+        String maxsr = "";
+        String minproc = "";
+        String maxproc = "";
+        String minmem = "";
+        String maxmem = "";
+        String minstor = "";
+        String maxstor = "";
+        String minprice = "";
+        String maxprice = "";
+        String battery = "";
+        String extras = "";
+        String [] feats;
+        this.products = new ArrayList<>();
+        lvProds.getItems().clear();
+        if (tfPhoneBrand.getText().length() > 0)
+            brand = "&brand=" + tfPhoneBrand.getText();
+        if (tfPhoneSSize.getText().length() > 0) {
+            feats = getranges(tfPhoneSSize,"screensize");
+            minss = "&" + feats[0];
+            maxss = "&" + feats[1];
+
+        }
+
+
+        if (tfPhoneMem.getText().length() > 0) {
+            feats = getranges(tfPhoneMem,"memory");
+            minmem = "&" + feats[0];
+            maxmem = "&" + feats[1];
+        }
+
+        if (tfPhonePrice.getText().length() > 0) {
+            feats = getranges(tfPhonePrice,"price");
+            minprice = "&" + feats[0];
+            maxprice = "&" + feats[1];
+        }
+        if (radiobtnPhoneAllday.isSelected())
+            battery = "&batterylife=allday";
+        else if (radiobtnPhoneExtralong.isSelected())
+            battery = "&batterylife=extra";
+        if (checkboxPhoneFace.isSelected() || checkboxPhoneFinger.isSelected() || checkboxPhoneTouch.isSelected()){
+            extras = "&extrafeatures=";
+            if (checkboxPhoneFace.isSelected())
+                extras += "facerecognition,";
+            if (checkboxPhoneTouch.isSelected())
+                extras += "touchscreen,";
+            if (checkboxPhoneFinger.isSelected())
+                extras += "fingerprint,";
+        }
 
 
 
+        String response = "";
+
+        HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/getphoneswithranges?"
+                + brand + minss + maxss + minsr + maxsr + minproc + maxproc + minmem + maxmem + minstor + maxstor + minprice + maxprice).openConnection();
+        connection.setRequestMethod("GET");
+        int responsecode = connection.getResponseCode();
+        if(responsecode == 200){
+            Scanner scanner = new Scanner(connection.getInputStream());
+            while(scanner.hasNextLine()){
+                response += scanner.nextLine();
+                response += "\n";
+            }
+            scanner.close();
+        }
+        JSONParser parser = new JSONParser();
+        Object obj1 = parser.parse(response);
+        JSONArray array1 = (JSONArray) obj1;
+        response = "";
+        connection = (HttpURLConnection) new URL("http://localhost:8080/getphones?"
+                + brand + battery + extras).openConnection();
+        connection.setRequestMethod("GET");
+        responsecode = connection.getResponseCode();
+        if(responsecode == 200){
+            Scanner scanner = new Scanner(connection.getInputStream());
+            while(scanner.hasNextLine()){
+                response += scanner.nextLine();
+                response += "\n";
+            }
+            scanner.close();
+        }
+        parser = new JSONParser();
+        Object obj2 = parser.parse(response);
+        JSONArray array2 = (JSONArray) obj2;
+
+        ArrayList<JSONObject> array = new ArrayList<>();
+
+
+        for (int i = 0; i < array1.size(); i++){
+            JSONObject temp1 = (JSONObject) array1.get(i);
+            for (int j = 0; j<array2.size(); j++){
+                JSONObject temp2 = (JSONObject) array2.get(j);
+                if (temp1.get("prod_id") == temp2.get("prod_id"))
+                    array.add(temp1);
+            }
+        }
+
+        for (int i = 0; i < array.size(); i++){
+            JSONObject temp = (JSONObject) array.get(i);
+
+
+            JSONArray productfeatures = (JSONArray) temp.get("prodFeatures");
+
+            JSONArray reviews = (JSONArray) temp.get("comments");
+            Product product = new Product();
+            try {
+                JSONObject brandjson = (JSONObject) temp.get("brand");
+                product.setBrand((String) brandjson.get("name"));
+            }catch(Exception e){
+                product.setBrand((String) temp.get("brand"));
+            }
+            product.setId(temp.get("prod_id").toString());
+            product.setModel((String) temp.get("model"));
+            product.setPrice(temp.get("price").toString());
+
+            for (int j = 0; j < productfeatures.size(); j++){
+                JSONObject temp2 = (JSONObject) productfeatures.get(j);
+                JSONObject temp2id = (JSONObject) temp2.get("id");
+                String featurename = (String) temp2id.get("feat_name");
+                if(featurename.equals("memory"))
+                    product.setMemory((String) temp2.get("value"));
+                if(featurename.equals("screen_size"))
+                    product.setScreensize((String) temp2.get("value"));
+                if(featurename.equals("memory"))
+                    product.setMemory((String) temp2.get("value"));
+                if(featurename.equals("battery_life_all_day"))
+                    product.setBattery("All Day Battery");
+                else if(featurename.equals("battery_life_extra_long"))
+                    product.setBattery("Extra Long Battery");
+                if (featurename.equals("face_recognition"))
+                    product.setFace("Face Recognition");
+                if (featurename.equals("fingerprint_reader"))
+                    product.setFinger("Fingerprint Reader");
+                if (featurename.equals("touchscreen"))
+                    product.setFace("Touchscreen");
+            }
+            for (int j = 0; j < reviews.size(); j++){
+                JSONObject temp3 = (JSONObject) reviews.get(j);
+                product.getReviews().add(new Review((String) temp3.get("rating"), (String) temp3.get("message")));
+            }
+            product.setLabel(" ");
+            if (Double.parseDouble(product.getScreensize()) > 6)
+                product.setLabel(product.getLabel() + " Large Screen");
+            if (Integer.parseInt(product.getMemory()) > 128)
+                product.setLabel(product.getLabel() + " Large Storage");
+            lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
+            this.products.add(product);
+        }
+
+    }
+
+    public void sortBtnPressed(ActionEvent e){
+        Comparator<Product> compareByPrice = Comparator.comparing(Product::getPrice);
+        products.sort(compareByPrice.reversed());
+        lvProds.getItems().clear();
+        for(Product product:products){
+            lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
+        }
+    }
 
 
     private String[] getranges(TextField tf, String feature){

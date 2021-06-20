@@ -16,6 +16,7 @@ public class Product {
     private String touch;
     private String finger;
     private String face;
+    private String label;
     private ArrayList<Review> reviews;
 
 
@@ -34,6 +35,7 @@ public class Product {
         this.face = null;
         this.finger = null;
         this.touch = null;
+        this.label = null;
         this.reviews = new ArrayList<Review>();
     }
     public Product(String id, String brand, String screensize, String resolution, String processor, String memory, String storage, String price) {
@@ -153,4 +155,11 @@ public class Product {
         this.model = model;
     }
 
+    public String getLabel() {
+        return this.label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
 }
