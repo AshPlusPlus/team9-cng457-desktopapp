@@ -128,7 +128,7 @@ public class Controller {
         else
             battery = "&batterylife=extra";
         if (checkboxCompFace.isSelected() || checkboxCompFinger.isSelected() || checkboxCompTouch.isSelected()){
-            extras = "& extrafeatures=";
+            extras = "&extrafeatures=";
             if (checkboxCompFace.isSelected())
                 extras += "facerecognition,";
             if (checkboxCompTouch.isSelected())
@@ -140,6 +140,7 @@ public class Controller {
 
 
         String response = "";
+
         HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/getcomputerswithranges?"
         + brand + minss + maxss + minsr + maxsr + minproc + maxproc + minmem + maxmem + minstor + maxstor + minprice + maxprice).openConnection();
         connection.setRequestMethod("GET");
@@ -155,7 +156,6 @@ public class Controller {
         JSONParser parser = new JSONParser();
         Object obj1 = parser.parse(response);
         JSONArray array1 = (JSONArray) obj1;
-
         response = "";
         connection = (HttpURLConnection) new URL("http://localhost:8080/getcomputers?"
                 + brand + battery + extras).openConnection();
@@ -174,8 +174,7 @@ public class Controller {
         JSONArray array2 = (JSONArray) obj2;
 
         ArrayList<JSONObject> array = new ArrayList<>();
-        System.out.println(array1.size());
-        System.out.println(array2.size());
+
 
         for (int i = 0; i < array1.size(); i++){
             JSONObject temp1 = (JSONObject) array1.get(i);
@@ -185,18 +184,25 @@ public class Controller {
                     array.add(temp1);
             }
         }
-        System.out.println(array.size());
+
         for (int i = 0; i < array.size(); i++){
             JSONObject temp = (JSONObject) array.get(i);
-            JSONObject brandjson = (JSONObject) temp.get("brand");
+
+
             JSONArray productfeatures = (JSONArray) temp.get("prodFeatures");
-            System.out.println(productfeatures.size());
+
             JSONArray reviews = (JSONArray) temp.get("comments");
             Product product = new Product();
+            try {
+                JSONObject brandjson = (JSONObject) temp.get("brand");
+                product.setBrand((String) brandjson.get("name"));
+            }catch(Exception e){
+                product.setBrand((String) temp.get("brand"));
+            }
             product.setId(temp.get("prod_id").toString());
             product.setModel((String) temp.get("model"));
             product.setPrice(temp.get("price").toString());
-            product.setBrand((String) brandjson.get("name"));
+
             for (int j = 0; j < productfeatures.size(); j++){
                 JSONObject temp2 = (JSONObject) productfeatures.get(j);
                 JSONObject temp2id = (JSONObject) temp2.get("id");
@@ -227,15 +233,15 @@ public class Controller {
                 product.getReviews().add(new Review((String) temp3.get("rating"), (String) temp3.get("message")));
             }
 
-            System.out.println(product.getBrand() + product.getModel());
+            lvProds.getItems().add(product.getBrand() + product.getModel());
             this.products.add(product);
         }
-        //HBox hbox = new HBox(lvProds);
-
-
-
 
     }
+
+
+    
+
 
 
     private String[] getranges(TextField tf, String feature){
