@@ -158,7 +158,7 @@ public class Controller {
 
         response = "";
         connection = (HttpURLConnection) new URL("http://localhost:8080/getcomputers?"
-                + battery + extras).openConnection();
+                + brand + battery + extras).openConnection();
         connection.setRequestMethod("GET");
         responsecode = connection.getResponseCode();
         if(responsecode == 200){
@@ -181,7 +181,7 @@ public class Controller {
             JSONObject temp1 = (JSONObject) array1.get(i);
             for (int j = 0; j<array2.size(); j++){
                 JSONObject temp2 = (JSONObject) array2.get(j);
-                if (temp1.equals(temp2))
+                if (temp1.get("prod_id") == temp2.get("prod_id"))
                     array.add(temp1);
             }
         }
@@ -189,7 +189,8 @@ public class Controller {
         for (int i = 0; i < array.size(); i++){
             JSONObject temp = (JSONObject) array.get(i);
             JSONObject brandjson = (JSONObject) temp.get("brand");
-            JSONArray productfeatures = (JSONArray) temp.get("prod_features");
+            JSONArray productfeatures = (JSONArray) temp.get("prodFeatures");
+            System.out.println(productfeatures.size());
             JSONArray reviews = (JSONArray) temp.get("comments");
             Product product = new Product();
             product.setId(temp.get("prod_id").toString());
