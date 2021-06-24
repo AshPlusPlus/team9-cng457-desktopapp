@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
+import java.util.concurrent.RecursiveAction;
 
 public class Controller {
     // Computers Menu
@@ -240,9 +241,15 @@ public class Controller {
                 if (featurename.equals("touchscreen"))
                     product.setFace("Touchscreen");
             }
+            Review review;
             for (int j =0; j<reviews.size();j++){
                 JSONObject temp3 = (JSONObject) reviews.get(j);
-                product.getReviews().add(new Review((String) temp3.get("rating"), (String) temp3.get("message")));
+                review  = new Review();
+                if (temp3.get("rating")!=null)
+                    review.setRating(temp3.get("rating").toString());
+                if (temp3.get("message")!=null)
+                    review.setComment((String) temp3.get("message"));
+                product.getReviews().add(review);
             }
             product.setLabel(" ");
             if (Integer.parseInt(product.getMemory()) > 16)
@@ -450,7 +457,7 @@ public class Controller {
             for (Review review: product.getReviews()){
                 lvComp2.getItems().add("Rating: " + review.getRating());
                 if (review.getComment()!=null)
-                    lvComp2.getItems().add("Comment: " + review.getRating());
+                    lvComp2.getItems().add("Comment: " + review.getComment());
                 j++;
                 if (j==3)
                     break;
