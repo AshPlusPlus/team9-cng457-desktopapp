@@ -239,7 +239,7 @@ public class Controller {
                 if (featurename.equals("fingerprint_reader"))
                     product.setFinger("Fingerprint Reader");
                 if (featurename.equals("touchscreen"))
-                    product.setFace("Touchscreen");
+                    product.setTouch("Touchscreen");
             }
             Review review;
             for (int j =0; j<reviews.size();j++){
@@ -252,9 +252,9 @@ public class Controller {
                 product.getReviews().add(review);
             }
             product.setLabel(" ");
-            if (Integer.parseInt(product.getMemory()) > 16)
+            if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 16)
                 product.setLabel(product.getLabel() + "Large Memory ");
-            if (Integer.parseInt(product.getStorage()) > 1000)
+            if (product.getStorage() != null && Integer.parseInt(product.getStorage()) > 1000)
                 product.setLabel(product.getLabel() + "Large Storage");
             lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
             this.products.add(product);
@@ -401,16 +401,22 @@ public class Controller {
                 if (featurename.equals("fingerprint_reader"))
                     product.setFinger("Fingerprint Reader");
                 if (featurename.equals("touchscreen"))
-                    product.setFace("Touchscreen");
+                    product.setTouch("Touchscreen");
             }
+            Review review;
             for (int j = 0; j < reviews.size(); j++){
                 JSONObject temp3 = (JSONObject) reviews.get(j);
-                product.getReviews().add(new Review((String) temp3.get("rating"), (String) temp3.get("message")));
+                review  = new Review();
+                if (temp3.get("rating")!=null)
+                    review.setRating(temp3.get("rating").toString());
+                if (temp3.get("message")!=null)
+                    review.setComment((String) temp3.get("message"));
+                product.getReviews().add(review);
             }
             product.setLabel(" ");
-            if (Double.parseDouble(product.getScreensize()) > 6)
+            if (product.getScreensize() != null && Double.parseDouble(product.getScreensize()) > 6)
                 product.setLabel(product.getLabel() + " Large Screen");
-            if (Integer.parseInt(product.getMemory()) > 128)
+            if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 128)
                 product.setLabel(product.getLabel() + " Large Storage");
             lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
             this.products.add(product);
