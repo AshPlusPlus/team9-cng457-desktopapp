@@ -1,10 +1,13 @@
 package sample;
 
-import javafx.collections.ListChangeListener;
+import threads.ReviewsThread;
+import threads.StatsThread;
+import helpers.Product;
+import helpers.Review;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,10 +18,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
-import java.util.concurrent.RecursiveAction;
 
 public class Controller {
     // Computers Menu
@@ -244,7 +245,9 @@ public class Controller {
             Review review;
             for (int j =0; j<reviews.size();j++){
                 JSONObject temp3 = (JSONObject) reviews.get(j);
-                review  = new Review();
+                JSONObject temp4 = (JSONObject) temp3.get("id");
+                review  = new Review();;
+                review.setId((Long) temp4.get("com_id"));
                 if (temp3.get("rating")!=null)
                     review.setRating(temp3.get("rating").toString());
                 if (temp3.get("message")!=null)
@@ -257,8 +260,11 @@ public class Controller {
             if (product.getStorage() != null && Integer.parseInt(product.getStorage()) > 1000)
                 product.setLabel(product.getLabel() + "Large Storage");
             lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
+            Comparator<Review> compareById = Comparator.comparing(Review::getId);
+            product.getReviews().sort(compareById.reversed());
             this.products.add(product);
         }
+
 
     }
 
@@ -434,42 +440,8 @@ public class Controller {
     }
 
     public void compareBtnPressed(ActionEvent e){
-        lvComp1.getItems().clear();
-        lvComp2.getItems().clear();
-        Product product = null;
-        for (int i = 0; i<lvProds.getSelectionModel().getSelectedIndices().size(); i++) {
-            product = products.get((int) lvProds.getSelectionModel().getSelectedIndices().get(i));
-            lvComp1.getItems().add("Product " + (i+1));
-            lvComp1.getItems().add("\tBrand: " + product.getBrand());
-            lvComp1.getItems().add("\tModel: " + product.getModel());
-            lvComp1.getItems().add("\tPrice: " + product.getPrice());
-            lvComp1.getItems().add("\tScreen Size: " + product.getScreensize());
-            lvComp1.getItems().add("\tMemory: " + product.getMemory());
-            lvComp1.getItems().add("\tBattery: " + product.getBattery());
-            if(product.getStorage()!=null) {
-                lvComp1.getItems().add("\tStorage: " + product.getStorage());
-                lvComp1.getItems().add("\tProcessor: " + product.getProcessor());
-                lvComp1.getItems().add("\tResolution: " + product.getResolution());
-            }
-            if (product.getFace()!=null)
-                lvComp1.getItems().add("\tFace Recognition: ");
-            if (product.getFinger()!=null)
-                lvComp1.getItems().add("\tFingerprint Reader: ");
-            if (product.getTouch()!=null)
-                lvComp1.getItems().add("\tTouchscreen: ");
-
-            lvComp2.getItems().add("Product " + (i+1));
-            int j = 0;
-            for (Review review: product.getReviews()){
-                lvComp2.getItems().add("Rating: " + review.getRating());
-                if (review.getComment()!=null)
-                    lvComp2.getItems().add("Comment: " + review.getComment());
-                j++;
-                if (j==3)
-                    break;
-            }
-        }
-
+        Platform.runLater(new StatsThread(products, lvProds.getSelectionModel().getSelectedIndices(), lvComp1));
+        Platform.runLater(new ReviewsThread(products, lvProds.getSelectionModel().getSelectedIndices(), lvComp2));
     }
 
 
