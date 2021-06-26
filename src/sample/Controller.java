@@ -16,7 +16,6 @@ import org.json.simple.parser.JSONParser;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Scanner;
@@ -47,8 +46,6 @@ public class Controller {
     private CheckBox checkboxCompFace;
     @FXML
     private CheckBox checkboxCompFinger;
-    @FXML
-    private Button btnGetComps;
     // Phones Menu
     @FXML
     private TextField tfPhoneBrand;
@@ -69,20 +66,16 @@ public class Controller {
     @FXML
     private CheckBox checkboxPhoneFinger;
     @FXML
-    private Button btnGetPhones;
-    @FXML
     private ListView lvProds;
     @FXML
     private ListView lvComp1;
     @FXML
     private ListView lvComp2;
-    @FXML
-    private Button btnSort;
 
     private ArrayList<Product> products;
 
 
-    public void compBtnPressed(ActionEvent event) throws IOException, ParseException, org.json.simple.parser.ParseException {
+    public void compBtnPressed(ActionEvent event) throws IOException, org.json.simple.parser.ParseException {
         String brand = "";
         String minss = "";
         String maxss = "";
@@ -138,7 +131,6 @@ public class Controller {
             battery = "&batterylife=allday";
         else if (radiobtnCompExtralong.isSelected())
             battery = "&batterylife=extra";
-
         if (checkboxCompFace.isSelected() || checkboxCompFinger.isSelected() || checkboxCompTouch.isSelected()){
             extras = "&extrafeatures=";
             if (checkboxCompFace.isSelected())
@@ -149,137 +141,21 @@ public class Controller {
                 extras += "fingerprint,";
         }
 
-
-
-        String response = "";
-
-        HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/getcomputerswithranges?"
-        + brand + minss + maxss + minsr + maxsr + minproc + maxproc + minmem + maxmem + minstor + maxstor + minprice + maxprice).openConnection();
-        connection.setRequestMethod("GET");
-        int responsecode = connection.getResponseCode();
-        if(responsecode == 200){
-            Scanner scanner = new Scanner(connection.getInputStream());
-            while(scanner.hasNextLine()){
-                response += scanner.nextLine();
-                response += "\n";
-            }
-            scanner.close();
-        }
-        JSONParser parser = new JSONParser();
-        Object obj1 = parser.parse(response);
+        Object obj1 = getJSONresponse("getcomputerswithranges?"
+                + brand + minss + maxss + minsr + maxsr + minproc + maxproc + minmem + maxmem + minstor + maxstor + minprice + maxprice);
+        Object obj2 = getJSONresponse("getcomputers?" + brand + battery + extras);
         JSONArray array1 = (JSONArray) obj1;
-        response = "";
-        connection = (HttpURLConnection) new URL("http://localhost:8080/getcomputers?"
-                + brand + battery + extras).openConnection();
-        connection.setRequestMethod("GET");
-        responsecode = connection.getResponseCode();
-        if(responsecode == 200){
-            Scanner scanner = new Scanner(connection.getInputStream());
-            while(scanner.hasNextLine()){
-                response += scanner.nextLine();
-                response += "\n";
-            }
-            scanner.close();
-        }
-        parser = new JSONParser();
-        Object obj2 = parser.parse(response);
         JSONArray array2 = (JSONArray) obj2;
-
-        ArrayList<JSONObject> array = new ArrayList<>();
-
-
-        for (int i = 0; i < array1.size(); i++){
-            JSONObject temp1 = (JSONObject) array1.get(i);
-            for (int j = 0; j<array2.size(); j++){
-                JSONObject temp2 = (JSONObject) array2.get(j);
-                if (temp1.get("prod_id") == temp2.get("prod_id"))
-                    array.add(temp1);
-            }
-        }
-
-        for (int i = 0; i < array.size(); i++){
-            JSONObject temp = (JSONObject) array.get(i);
-
-
-            JSONArray productfeatures = (JSONArray) temp.get("prodFeatures");
-
-            JSONArray reviews = (JSONArray) temp.get("comments");
-            Product product = new Product();
-            try {
-                JSONObject brandjson = (JSONObject) temp.get("brand");
-                product.setBrand((String) brandjson.get("name"));
-            }catch(Exception e){
-                product.setBrand((String) temp.get("brand"));
-            }
-            product.setId(temp.get("prod_id").toString());
-            product.setModel((String) temp.get("model"));
-            product.setPrice(Double.parseDouble(temp.get("price").toString()));
-
-            for (int j = 0; j < productfeatures.size(); j++){
-                JSONObject temp2 = (JSONObject) productfeatures.get(j);
-                JSONObject temp2id = (JSONObject) temp2.get("id");
-                String featurename = (String) temp2id.get("feat_name");
-                if(featurename.equals("memory"))
-                    product.setMemory((String) temp2.get("value"));
-                if(featurename.equals("processor"))
-                    product.setProcessor((String) temp2.get("value"));
-                if(featurename.equals("screen_resolution"))
-                    product.setResolution((String) temp2.get("value"));
-                if(featurename.equals("screen_size"))
-                    product.setScreensize((String) temp2.get("value"));
-                if(featurename.equals("memory"))
-                    product.setMemory((String) temp2.get("value"));
-                if(featurename.equals("storage_capacity"))
-                    product.setStorage((String) temp2.get("value"));
-                if(featurename.equals("battery_life_all_day"))
-                    product.setBattery("All Day Battery");
-                else if(featurename.equals("battery_life_extra_long"))
-                    product.setBattery("Extra Long Battery");
-                if (featurename.equals("face_recognition"))
-                    product.setFace("Face Recognition");
-                if (featurename.equals("fingerprint_reader"))
-                    product.setFinger("Fingerprint Reader");
-                if (featurename.equals("touchscreen"))
-                    product.setTouch("Touchscreen");
-            }
-            Review review;
-            for (int j =0; j<reviews.size();j++){
-                JSONObject temp3 = (JSONObject) reviews.get(j);
-                JSONObject temp4 = (JSONObject) temp3.get("id");
-                review  = new Review();;
-                review.setId((Long) temp4.get("com_id"));
-                if (temp3.get("rating")!=null)
-                    review.setRating(temp3.get("rating").toString());
-                if (temp3.get("message")!=null)
-                    review.setComment((String) temp3.get("message"));
-                product.getReviews().add(review);
-            }
-            product.setLabel(" ");
-            if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 16)
-                product.setLabel(product.getLabel() + "Large Memory ");
-            if (product.getStorage() != null && Integer.parseInt(product.getStorage()) > 1000)
-                product.setLabel(product.getLabel() + "Large Storage");
-            lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
-            Comparator<Review> compareById = Comparator.comparing(Review::getId);
-            product.getReviews().sort(compareById.reversed());
-            this.products.add(product);
-        }
-
-
+        ArrayList<JSONObject> array = getCommonProds((JSONArray) obj1, (JSONArray) obj2);
+        parseProducts(array);
     }
 
-    public void phoneBtnPressed(ActionEvent event) throws IOException, ParseException, org.json.simple.parser.ParseException {
+    public void phoneBtnPressed(ActionEvent event) throws IOException, org.json.simple.parser.ParseException {
         String brand = "";
         String minss = "";
         String maxss = "";
-        String minsr = "";
-        String maxsr = "";
-        String minproc = "";
-        String maxproc = "";
         String minmem = "";
         String maxmem = "";
-        String minstor = "";
-        String maxstor = "";
         String minprice = "";
         String maxprice = "";
         String battery = "";
@@ -295,14 +171,11 @@ public class Controller {
             maxss = "&" + feats[1];
 
         }
-
-
         if (tfPhoneMem.getText().length() > 0) {
             feats = getranges(tfPhoneMem,"memory");
             minmem = "&" + feats[0];
             maxmem = "&" + feats[1];
         }
-
         if (tfPhonePrice.getText().length() > 0) {
             feats = getranges(tfPhonePrice,"price");
             minprice = "&" + feats[0];
@@ -322,112 +195,10 @@ public class Controller {
                 extras += "fingerprint,";
         }
 
-
-
-        String response = "";
-
-        HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/getphoneswithranges?"
-                + brand + minss + maxss + minsr + maxsr + minproc + maxproc + minmem + maxmem + minstor + maxstor + minprice + maxprice).openConnection();
-        connection.setRequestMethod("GET");
-        int responsecode = connection.getResponseCode();
-        if(responsecode == 200){
-            Scanner scanner = new Scanner(connection.getInputStream());
-            while(scanner.hasNextLine()){
-                response += scanner.nextLine();
-                response += "\n";
-            }
-            scanner.close();
-        }
-        JSONParser parser = new JSONParser();
-        Object obj1 = parser.parse(response);
-        JSONArray array1 = (JSONArray) obj1;
-        response = "";
-        connection = (HttpURLConnection) new URL("http://localhost:8080/getphones?"
-                + brand + battery + extras).openConnection();
-        connection.setRequestMethod("GET");
-        responsecode = connection.getResponseCode();
-        if(responsecode == 200){
-            Scanner scanner = new Scanner(connection.getInputStream());
-            while(scanner.hasNextLine()){
-                response += scanner.nextLine();
-                response += "\n";
-            }
-            scanner.close();
-        }
-        parser = new JSONParser();
-        Object obj2 = parser.parse(response);
-        JSONArray array2 = (JSONArray) obj2;
-
-        ArrayList<JSONObject> array = new ArrayList<>();
-
-
-        for (int i = 0; i < array1.size(); i++){
-            JSONObject temp1 = (JSONObject) array1.get(i);
-            for (int j = 0; j<array2.size(); j++){
-                JSONObject temp2 = (JSONObject) array2.get(j);
-                if (temp1.get("prod_id") == temp2.get("prod_id"))
-                    array.add(temp1);
-            }
-        }
-
-        for (int i = 0; i < array.size(); i++){
-            JSONObject temp = (JSONObject) array.get(i);
-
-
-            JSONArray productfeatures = (JSONArray) temp.get("prodFeatures");
-
-            JSONArray reviews = (JSONArray) temp.get("comments");
-            Product product = new Product();
-            try {
-                JSONObject brandjson = (JSONObject) temp.get("brand");
-                product.setBrand((String) brandjson.get("name"));
-            }catch(Exception e){
-                product.setBrand((String) temp.get("brand"));
-            }
-            product.setId(temp.get("prod_id").toString());
-            product.setModel((String) temp.get("model"));
-            product.setPrice(Double.parseDouble(temp.get("price").toString()));
-
-            for (int j = 0; j < productfeatures.size(); j++){
-                JSONObject temp2 = (JSONObject) productfeatures.get(j);
-                JSONObject temp2id = (JSONObject) temp2.get("id");
-                String featurename = (String) temp2id.get("feat_name");
-                if(featurename.equals("memory"))
-                    product.setMemory((String) temp2.get("value"));
-                if(featurename.equals("screen_size"))
-                    product.setScreensize((String) temp2.get("value"));
-                if(featurename.equals("memory"))
-                    product.setMemory((String) temp2.get("value"));
-                if(featurename.equals("battery_life_all_day"))
-                    product.setBattery("All Day Battery");
-                else if(featurename.equals("battery_life_extra_long"))
-                    product.setBattery("Extra Long Battery");
-                if (featurename.equals("face_recognition"))
-                    product.setFace("Face Recognition");
-                if (featurename.equals("fingerprint_reader"))
-                    product.setFinger("Fingerprint Reader");
-                if (featurename.equals("touchscreen"))
-                    product.setTouch("Touchscreen");
-            }
-            Review review;
-            for (int j = 0; j < reviews.size(); j++){
-                JSONObject temp3 = (JSONObject) reviews.get(j);
-                review  = new Review();
-                if (temp3.get("rating")!=null)
-                    review.setRating(temp3.get("rating").toString());
-                if (temp3.get("message")!=null)
-                    review.setComment((String) temp3.get("message"));
-                product.getReviews().add(review);
-            }
-            product.setLabel(" ");
-            if (product.getScreensize() != null && Double.parseDouble(product.getScreensize()) > 6)
-                product.setLabel(product.getLabel() + " Large Screen");
-            if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 128)
-                product.setLabel(product.getLabel() + " Large Storage");
-            lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
-            this.products.add(product);
-        }
-
+        Object obj1 = getJSONresponse("getphoneswithranges?" + brand + minss + maxss + minmem + maxmem + minprice + maxprice);
+        Object obj2 = getJSONresponse("getphones?" + brand + battery + extras);
+        ArrayList<JSONObject> array = getCommonProds((JSONArray) obj1, (JSONArray) obj2);
+        parseProducts(array);
     }
 
     public void sortBtnPressed(ActionEvent e){
@@ -443,7 +214,6 @@ public class Controller {
         Platform.runLater(new StatsThread(products, lvProds.getSelectionModel().getSelectedIndices(), lvComp1));
         Platform.runLater(new ReviewsThread(products, lvProds.getSelectionModel().getSelectedIndices(), lvComp2));
     }
-
 
     private String[] getranges(TextField tf, String feature){
         String[] ranges;
@@ -465,6 +235,107 @@ public class Controller {
         }
         return feats;
     }
+
+    private Object getJSONresponse(String endpoints) throws IOException, org.json.simple.parser.ParseException  {
+        String response = "";
+        HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/" + endpoints).openConnection();
+        connection.setRequestMethod("GET");
+        int responsecode = connection.getResponseCode();
+        if(responsecode == 200){
+            Scanner scanner = new Scanner(connection.getInputStream());
+            while(scanner.hasNextLine()){
+                response += scanner.nextLine();
+                response += "\n";
+            }
+            scanner.close();
+        }
+        JSONParser parser = new JSONParser();
+        return parser.parse(response);
+    }
+
+    private ArrayList<JSONObject> getCommonProds(JSONArray array1, JSONArray array2) {
+        ArrayList<JSONObject> array = new ArrayList<>();
+        for (int i = 0; i < array1.size(); i++){
+            JSONObject temp = (JSONObject) array1.get(i);
+            for (int j = 0; j<array2.size(); j++){
+                JSONObject temp2 = (JSONObject) array2.get(j);
+                if (temp.get("prod_id") == temp2.get("prod_id"))
+                    array.add(temp);
+            }
+        }
+        return array;
+    }
+
+    private void parseProducts (ArrayList<JSONObject> array){
+        for (int i = 0; i < array.size(); i++){
+            JSONObject productJSON = (JSONObject) array.get(i);
+            JSONArray productfeatures = (JSONArray) productJSON.get("prodFeatures");
+            JSONArray reviews = (JSONArray) productJSON.get("comments");
+            Product product = new Product();
+            try {
+                JSONObject brandjson = (JSONObject) productJSON.get("brand");
+                product.setBrand((String) brandjson.get("name"));
+            }catch(Exception e){
+                product.setBrand((String) productJSON.get("brand"));
+            }
+            product.setId(productJSON.get("prod_id").toString());
+            product.setModel((String) productJSON.get("model"));
+            product.setPrice(Double.parseDouble(productJSON.get("price").toString()));
+
+            for (int j = 0; j < productfeatures.size(); j++){
+                JSONObject prodfeatureJSON = (JSONObject) productfeatures.get(j);
+                JSONObject prodfeatureIdJSON = (JSONObject) prodfeatureJSON.get("id");
+                String featurename = (String) prodfeatureIdJSON.get("feat_name");
+                if(featurename.equals("memory"))
+                    product.setMemory((String) prodfeatureJSON.get("value"));
+                if(featurename.equals("processor"))
+                    product.setProcessor((String) prodfeatureJSON.get("value"));
+                if(featurename.equals("screen_resolution"))
+                    product.setResolution((String) prodfeatureJSON.get("value"));
+                if(featurename.equals("screen_size"))
+                    product.setScreensize((String) prodfeatureJSON.get("value"));
+                if(featurename.equals("memory"))
+                    product.setMemory((String) prodfeatureJSON.get("value"));
+                if(featurename.equals("storage_capacity"))
+                    product.setStorage((String) prodfeatureJSON.get("value"));
+                if(featurename.equals("battery_life_all_day"))
+                    product.setBattery("All Day Battery");
+                else if(featurename.equals("battery_life_extra_long"))
+                    product.setBattery("Extra Long Battery");
+                if (featurename.equals("face_recognition"))
+                    product.setFace("Face Recognition");
+                if (featurename.equals("fingerprint_reader"))
+                    product.setFinger("Fingerprint Reader");
+                if (featurename.equals("touchscreen"))
+                    product.setTouch("Touchscreen");
+            }
+
+            Review review;
+            for (int j = 0; j < reviews.size(); j++) {
+                JSONObject temp3 = (JSONObject) reviews.get(j);
+                JSONObject temp4 = (JSONObject) temp3.get("id");
+                review  = new Review();;
+                review.setId((Long) temp4.get("com_id"));
+                if (temp3.get("rating")!=null)
+                    review.setRating(temp3.get("rating").toString());
+                if (temp3.get("message")!=null)
+                    review.setComment((String) temp3.get("message"));
+                product.getReviews().add(review);
+            }
+            Comparator<Review> compareById = Comparator.comparing(Review::getId);
+            product.getReviews().sort(compareById.reversed());
+
+            product.setLabel(" ");
+            if (product.getScreensize() != null && Double.parseDouble(product.getScreensize()) > 6)
+                product.setLabel(product.getLabel() + " Large Screen");
+            if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 128)
+                product.setLabel(product.getLabel() + " Large Storage");
+            this.products.add(product);
+
+            lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
+        }
+    }
+
 
     private void inputRestrictions(TextField tf){
         tf.textProperty().addListener((observable, oldValue, newValue) -> {
