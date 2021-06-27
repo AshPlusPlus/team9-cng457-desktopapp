@@ -73,6 +73,7 @@ public class Controller {
     private ListView lvComp2;
 
     private ArrayList<Product> products;
+    private boolean phone;
 
     /**
      * Function that handles the event of the "Get Computers" button being pressed.
@@ -160,6 +161,7 @@ public class Controller {
         // getting common products between the 2 responses
         ArrayList<JSONObject> array = getCommonProds((JSONArray) obj1, (JSONArray) obj2);
         // parsing into list
+        phone = false;
         parseProducts(array);
     }
 
@@ -225,6 +227,7 @@ public class Controller {
         // getting common products between the 2 responses
         ArrayList<JSONObject> array = getCommonProds((JSONArray) obj1, (JSONArray) obj2);
         // parsing into list
+        phone = true;
         parseProducts(array);
     }
 
@@ -389,12 +392,20 @@ public class Controller {
             }
             Comparator<Review> compareById = Comparator.comparing(Review::getId);
             product.getReviews().sort(compareById.reversed());
-
-            product.setLabel(" ");
-            if (product.getScreensize() != null && Double.parseDouble(product.getScreensize()) > 6)
-                product.setLabel(product.getLabel() + " Large Screen");
-            if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 128)
-                product.setLabel(product.getLabel() + " Large Storage");
+            if (phone) {
+                product.setLabel(" ");
+                if (product.getScreensize() != null && Double.parseDouble(product.getScreensize()) > 6)
+                    product.setLabel(product.getLabel() + " Large Screen");
+                if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 128)
+                    product.setLabel(product.getLabel() + " Large Storage");
+            }
+            else {
+                product.setLabel(" ");
+                if (product.getMemory() != null && Integer.parseInt(product.getMemory()) > 16)
+                    product.setLabel(product.getLabel() + "Large Memory ");
+                if (product.getStorage() != null && Integer.parseInt(product.getStorage()) > 1000)
+                    product.setLabel(product.getLabel() + "Large Storage");
+            }
             this.products.add(product);
 
             lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
