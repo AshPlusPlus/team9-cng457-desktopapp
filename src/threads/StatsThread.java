@@ -21,7 +21,7 @@ public class StatsThread implements Runnable {
         Product product;
         lv.getItems().clear();
         for (int i = 0; i < Math.min(3, selections.size()); i++){
-            product = products.get((int) selections.get(i));
+            product = products.get(selections.get(i));
             lv.getItems().add("Product " + (i+1) + ":");
             if (product.getBrand() != null)
                 lv.getItems().add("\tBrand: " + product.getBrand());

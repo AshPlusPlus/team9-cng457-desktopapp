@@ -74,8 +74,16 @@ public class Controller {
 
     private ArrayList<Product> products;
 
-
+    /**
+     * Function that handles the event of the "Get Computers" button being pressed.
+     * It fetches the computers according the criteria entered by the user and stores them in products list.
+     * It also displays computers with their labels in the list view.
+     * @param event
+     * @throws IOException
+     * @throws org.json.simple.parser.ParseException
+     */
     public void compBtnPressed(ActionEvent event) throws IOException, org.json.simple.parser.ParseException {
+        // making up endpoints strings:
         String brand = "";
         String minss = "";
         String maxss = "";
@@ -141,16 +149,30 @@ public class Controller {
                 extras += "fingerprint,";
         }
 
+        // getting data from web service as JSON objects and parsing it into the list
+        // first response is for products with ranges criteria
         Object obj1 = getJSONresponse("getcomputerswithranges?"
                 + brand + minss + maxss + minsr + maxsr + minproc + maxproc + minmem + maxmem + minstor + maxstor + minprice + maxprice);
+        // second response is for products with battery and extra features criteria
         Object obj2 = getJSONresponse("getcomputers?" + brand + battery + extras);
         JSONArray array1 = (JSONArray) obj1;
         JSONArray array2 = (JSONArray) obj2;
+        // getting common products between the 2 responses
         ArrayList<JSONObject> array = getCommonProds((JSONArray) obj1, (JSONArray) obj2);
+        // parsing into list
         parseProducts(array);
     }
 
+    /**
+     * Function that handles the event of the "Get Phones" button being pressed.
+     * It fetches the phones according the criteria entered by the user and stores them in products list.
+     * It also displays phones with their labels in the list view.
+     * @param event
+     * @throws IOException
+     * @throws org.json.simple.parser.ParseException
+     */
     public void phoneBtnPressed(ActionEvent event) throws IOException, org.json.simple.parser.ParseException {
+        // making up endpoints strings:
         String brand = "";
         String minss = "";
         String maxss = "";
@@ -195,26 +217,52 @@ public class Controller {
                 extras += "fingerprint,";
         }
 
+        // getting data from web service as JSON objects and parsing it into the list
+        // first response is for products with ranges criteria
         Object obj1 = getJSONresponse("getphoneswithranges?" + brand + minss + maxss + minmem + maxmem + minprice + maxprice);
+        // second response is for products with battery and extra features criteria
         Object obj2 = getJSONresponse("getphones?" + brand + battery + extras);
+        // getting common products between the 2 responses
         ArrayList<JSONObject> array = getCommonProds((JSONArray) obj1, (JSONArray) obj2);
+        // parsing into list
         parseProducts(array);
     }
 
+    /** Function that handles the event of the "Sort" button being pressed.
+     *
+     * @param e
+     */
     public void sortBtnPressed(ActionEvent e){
+        // uses comparator class to sort list by descending order of price
         Comparator<Product> compareByPrice = Comparator.comparing(Product::getPrice);
         products.sort(compareByPrice.reversed());
+        // displays sorted list in listview
         lvProds.getItems().clear();
         for(Product product:products){
             lvProds.getItems().add(product.getBrand() + " " + product.getModel() + product.getLabel());
         }
     }
 
+    /**
+     * Function that handles the event of the "Compare" button being pressed.
+     * @param e
+     */
     public void compareBtnPressed(ActionEvent e){
+        // I create the runnables then I run them using Platform.runlater() function
+        // The reason I do this is because I change JavaFX components in the threads in order to
+        // display the comparisons in the list views, but the threads are not JavaFX threads
+        // and I was getting an IllegalStateException as a result.
         Platform.runLater(new StatsThread(products, lvProds.getSelectionModel().getSelectedIndices(), lvComp1));
         Platform.runLater(new ReviewsThread(products, lvProds.getSelectionModel().getSelectedIndices(), lvComp2));
     }
 
+    /**
+     * Function to get the ranges mentioned in the text fields and parse them into a String list.
+     * If no range is specified both lower and upper boundaries are equal to specified value.
+     * @param tf
+     * @param feature
+     * @return
+     */
     private String[] getranges(TextField tf, String feature){
         String[] ranges;
         String[] feats;
@@ -236,6 +284,13 @@ public class Controller {
         return feats;
     }
 
+    /**
+     * Function that makes the request to the webservice and gets the JSON response.
+     * @param endpoints
+     * @return
+     * @throws IOException
+     * @throws org.json.simple.parser.ParseException
+     */
     private Object getJSONresponse(String endpoints) throws IOException, org.json.simple.parser.ParseException  {
         String response = "";
         HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/" + endpoints).openConnection();
@@ -253,6 +308,12 @@ public class Controller {
         return parser.parse(response);
     }
 
+    /**
+     * Function that finds common products between two JSON arrays using product ids.
+     * @param array1
+     * @param array2
+     * @return
+     */
     private ArrayList<JSONObject> getCommonProds(JSONArray array1, JSONArray array2) {
         ArrayList<JSONObject> array = new ArrayList<>();
         for (int i = 0; i < array1.size(); i++){
@@ -266,6 +327,10 @@ public class Controller {
         return array;
     }
 
+    /**
+     * Function that parses the JSON reponse data into product objects and adds them to the list.
+     * @param array
+     */
     private void parseProducts (ArrayList<JSONObject> array){
         for (int i = 0; i < array.size(); i++){
             JSONObject productJSON = (JSONObject) array.get(i);
@@ -336,7 +401,11 @@ public class Controller {
         }
     }
 
-
+    /**
+     * Function that puts restrictions on what the user can enter in features textfields.
+     * Restrictions are that the user can only enter numbers or 1 dash character for making ranges.
+     * @param tf
+     */
     private void inputRestrictions(TextField tf){
         tf.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.length()<oldValue.length() && newValue.length() == 0)
@@ -356,6 +425,10 @@ public class Controller {
             }
         });
     }
+
+    /**
+     * Function for initialization.
+     */
     public void initialize(){
         inputRestrictions(tfCompSSize);
         inputRestrictions(tfCompMem);
@@ -370,9 +443,5 @@ public class Controller {
 
 
     }
-
-
-
-
 
 }
